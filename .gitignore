@@ -1,32 +1,7 @@
-# Prerequisites
-*.d
-
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+/DirectX_App_Template/.vs
+/DirectX_App_Template/Debug
+/DirectX_App_Template/Release
+/DirectX_App_Template/x64
+/DirectX_App_Template/App_Template/Debug
+/DirectX_App_Template/App_Template/Release
+/DirectX_App_Template/App_Template/x64
