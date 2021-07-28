@@ -6,6 +6,7 @@ bool RenderWindow::Initialize(WindowContainer* pWindowContainer,
 							  std::string window_class, 
 							  int width, int height)
 {
+	// Присвоение значений в соответствующие поля
 	this->hInstance = hInstance;
 	this->width = width;
 	this->height = height;
@@ -14,6 +15,7 @@ bool RenderWindow::Initialize(WindowContainer* pWindowContainer,
 	this->window_class = window_class;
 	this->window_class_wide = StringConverter::StringToWide(this->window_class); 
 
+	// Вызов регистрации окна
 	this->RegisterWindowClass();
 
 	int centerScreenX = GetSystemMetrics(SM_CXSCREEN) / 2 - this->width / 2;
@@ -116,13 +118,16 @@ LRESULT CALLBACK HandleMessageSetup(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 {
 	switch (uMsg)
 	{
+		/*
+		* WM_NCCREATE - сообщение приходящее перед созданием окна
+		*/
 		case WM_NCCREATE:
 		{
 			const CREATESTRUCTW* const pCreate = reinterpret_cast<CREATESTRUCTW*>(lParam);
 			WindowContainer* pWindow = reinterpret_cast<WindowContainer*>(pCreate->lpCreateParams);
-			if (pWindow == nullptr) //Sanity check
+			if (pWindow == nullptr) 
 			{
-				ErrorLogger::Log("Critical Error: Pointer to window container is null during WM_NCCREATE.");
+				ErrorLogger::Log("Критическая ошибка: указатель на WindowContainer пуст в WM_NCCREATE.");
 				exit(-1);
 			}
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pWindow));
@@ -136,19 +141,40 @@ LRESULT CALLBACK HandleMessageSetup(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 void RenderWindow::RegisterWindowClass()
 {
-	WNDCLASSEX wc;										//Класс окна (должен быть заполнен перед созданием окна). Подробнее: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577(v=vs.85).aspx
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;		//Флаги [Перерисовывать при изменении ширины | высоты | перемещении]. Подробнее: https://msdn.microsoft.com/en-us/library/windows/desktop/ff729176(v=vs.85).aspx
-	wc.lpfnWndProc = HandleMessageSetup;				// Указатель на функцию WindowProc для обработки сообщений этого окна
-	wc.cbClsExtra = 0;									//# дополнительные байты, которые необходимо выделить в соответствии с классом окна
-	wc.cbWndExtra = 0;									//# дополнительные байты после выделения окна
-	wc.hInstance = this->hInstance;						// Дескриптор программы, содержащий процедуру окна
-	wc.hIcon = NULL;									// Дескриптор значка класса иконки. Должен быть ресурс иконки, пока пусто
-	wc.hIconSm = NULL;									// Дескриптор значка программы, пока пусто
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);			// Стандартный курсор - если 1 - NULL, то нужно явно указывать форму курсора, когда он входит в окно
-	wc.hbrBackground = NULL;							// Дескриптор класса фоновой кисти для цвета фона окна, пока пусто, а позже сделаем его черным. Подробнее: https://msdn.microsoft.com/en-us/library/windows/desktop/dd144925(v=vs.85).aspx
-	wc.lpszMenuName = NULL;								// Указатель на NULL названия класса нашего окна
-	wc.lpszClassName = this->window_class_wide.c_str(); //
-	wc.cbSize = sizeof(WNDCLASSEX);						// Необходимо заполнить размер для нашей структуры cbSize
+	/*
+	* Структура WNDCLASSEX содержит информацию о классе окна необходимую для регистрации окна
+	* 
+	* style       - Стили определяют дополнительные элементы класса окна. Стили можно объединить с помощью '|'
+	*	Список стилей: http://www.vsokovikov.narod.ru/New_MSDN_API/Win_class/class_styles.htm
+	* lpfnWndProc - Указатель на оконную процедуру WindowProc
+	* cbClsExtra  - Число дополнительных байтов, которые размещаются вслед за структурой класса окна. Система инициализирует эти байты нулями
+	* cbWndExtra  - Число дополнительных байтов, которые размещаются вслед за экземпляром окна. Система инициализирует эти байты нулями
+	* hInstance   - Дескриптор экземпляра, который содержит оконную процедуру для класса
+	* hIcon       - Дескриптор значка класса. Этот член структуры должен быть дескриптором ресурса значка
+	* hIconSm	  - Дескриптор маленького значка, который связан с классом окна
+	* hCursor	  - Дескриптор курсора класса. Этот член структуры должен быть дескриптором ресурса курсора. 
+	*	Если этот член структуры - ПУСТО (NULL), приложение должно явно устанавливать форму курсора всякий раз, когда мышь перемещается в окно прикладной программы
+	* hbrBackground - Дескриптор кисти фона класса. Этот член структуры может быть дескриптором физической кисти, которая используется, чтобы красить цветом фона, 
+	*	или это может быть кодом цвета. Код цвета должен быть одним из ниже перечисленных стандартных системных цветов (значение 1 должно добавляться к выбранному цвету). 
+	*	Если дается код цвета, Вы должны преобразовать его в один из ниже перечисленных типов HBRUSH: http://www.vsokovikov.narod.ru/New_MSDN_API/Win_class/str_wndclassex.htm
+	* lpszMenuName  - Указатель на символьную строку с символом конца строки ('\0'), которая устанавливает имя ресурса меню класса, которое как имя показывается в файле ресурса
+	* lpszClassName - Символьная строка, она задает имя класса окна. Имя класса может быть любым именем, зарегистрированным функцией RegisterClass или RegisterClassEx 
+	* cbSize		- Размер структуры в байтах
+	*/
+	WNDCLASSEX wc;										// Класс окна (должен быть заполнен перед созданием окна). Подробнее: https://msdn.microsoft.com/en-us/library/windows/desktop/ms633577(v=vs.85).aspx
+	wc.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;		// уникальный контекст устройства для каждого окна в классе | перерисовать окно при изменении ширины или перемещении | -//- высоты -//-
+	wc.lpfnWndProc = HandleMessageSetup;				// указатель на функцию, которая передаст указатель на наш WindowProc
+	wc.cbClsExtra = 0;									// не нужны дополнительные байты
+	wc.cbWndExtra = 0;									// не нужны дополнительные байты
+	wc.hInstance = this->hInstance;						// дескриптор программы
+	wc.hIcon = NULL;									// значок по умолчанию
+	wc.hIconSm = NULL;									// значок по умолчанию
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);			// курсор по умолчанию
+	wc.hbrBackground = NULL;							// дескриптор класса фоновой кисти для цвета фона окна
+	wc.lpszMenuName = NULL;								// указатель на названия меню класса 
+	wc.lpszClassName = this->window_class_wide.c_str(); // имя названия класса окна
+	wc.cbSize = sizeof(WNDCLASSEX);						// размер структуры
+
 	RegisterClassEx(&wc);								// Регистрация окна для использования
 }
 

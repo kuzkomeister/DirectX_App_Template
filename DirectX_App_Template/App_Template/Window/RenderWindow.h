@@ -3,6 +3,9 @@
 
 class WindowContainer;
 
+/// <summary>
+/// Класс рендеринга окна
+/// </summary>
 class RenderWindow
 {
 public:
@@ -16,7 +19,7 @@ public:
 	/// <param name="width"> - Ширина окна</param>
 	/// <param name="height"> - Высота окна</param>
 	/// <returns>
-	/// True - Окно создалось, 
+	/// True  - Окно создалось, 
 	/// False - Окно не создалось
 	/// </returns>
 	bool Initialize(WindowContainer* pWindowContainer,
@@ -24,24 +27,30 @@ public:
 					std::string window_title, 
 					std::string window_class, 
 					int width, int height);
+
 	/// <summary>
 	/// Обработчик приема сообщений от клавиатуры и мыши
 	/// </summary>
 	/// <returns>
-	/// True - Происходит процесс приема сообщений, 
+	/// True  -	Окно доступно, 
 	/// False - Окно было закрыто
 	/// </returns>
 	bool ProcessMessages();		
+
 	/// <summary>
 	/// Получить дескриптор окна
 	/// </summary>
 	/// <returns>Дескриптор окна</returns>
 	HWND GetHWND() const;
-	// Деструктор окна
+
+	/// <summary>
+	/// Деструктор
+	/// </summary>
 	~RenderWindow();							
+
 private:
-	// Регистрация окна
-	void RegisterWindowClass();				
+	void RegisterWindowClass();				// Регистрация окна
+
 	HWND handle = NULL;						// Дескриптор окна
 	HINSTANCE hInstance = NULL;				// Дескриптор приложения
 	std::string window_title = "";			// Название окна

@@ -1,5 +1,10 @@
 #pragma once
 #include "Window/WindowContainer.h"
+
+/*
+* Класс движка DirectX приложения. Движок имеет свое окно, поэтому он наследует класс WindowContainer.
+*/
+
 class Engine : WindowContainer
 {
 public:
@@ -30,7 +35,7 @@ public:
 	bool ProcessMessages();
 
 	/// <summary>
-	/// Прием сообщений от клавиатуры
+	/// Прием сообщений от клавиатуры и мыши
 	/// </summary>
 	void Update();
 
